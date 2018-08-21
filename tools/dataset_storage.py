@@ -8,8 +8,15 @@ import torch
 class DatasetStorage:
     """Class for saving and loading TGS images and masks"""
 
-    def __init__(self, images_dir, masks_dir=None):
-        """Initialize dataset storage.
+    def __init__(self):
+        """Initialize empty dataset storage."""
+
+        self.filenames = []
+        self.images = []
+        self.masks = None
+
+    def load_dirs(self, images_dir, masks_dir=None):
+        """Load images from directories.
 
         Parameters
         ----------
@@ -21,8 +28,9 @@ class DatasetStorage:
 
         self.filenames = []
         self.images = []
-        self.masks = []
-        if masks_dir is None:
+        if masks_dir is not None:
+            self.masks = []
+        else:
             self.masks = None
 
         for file in os.listdir(images_dir):
@@ -36,6 +44,38 @@ class DatasetStorage:
                 mask_path = os.path.join(masks_dir, file)
                 mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
                 self.masks.append(mask)
+
+    def load_aggregated(self, aggregated_path):
+        """Load images from aggregated file.
+
+        Parameters
+        ----------
+        aggregated_path : str
+            Path to the aggregated file with images
+            and (optionally) masks
+        """
+
+        aggregated = torch.load(aggregated_path)
+        self.filenames = aggregated["filenames"]
+        self.images = aggregated["images"]
+        self.masks = aggregated["masks"]
+
+    def save_aggregated(self, aggregated_path):
+        """Save images to aggregated file.
+
+        Parameters
+        ----------
+        aggregated_path : str
+            Path to the aggregated file with images
+            and (optionally) masks
+        """
+
+        aggregated = {
+            "filenames": self.filenames,
+            "images": self.images,
+            "masks": self.masks
+        }
+        torch.save(aggregated, aggregated_path)
 
     def __getitem__(self, item):
         if self.masks is None:
