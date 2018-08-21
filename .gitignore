@@ -1,2 +1,9 @@
 # dataset images. You can download them from Kaggle
 *.png
+
+# PyCharm files
+.idea
+
+# Python venv
+.env
+venv
